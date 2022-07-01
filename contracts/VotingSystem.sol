@@ -7,10 +7,9 @@ error VotingSystem__NotInVoting();
 error VotingSystem__AlreadyVoted();
 
 contract VotingSystem {
-    uint256 private totalItems = 0;
+    uint256 private totalItems;
     mapping(uint256 => BallotBox) private ballotBoxRegistery;
-    mapping(address => mapping(uint256 => string))
-        private addressVotingRegistery;
+    mapping(address => mapping(uint256 => string)) private addressVotingRegistery;
 
     enum State {
         Created,
@@ -29,11 +28,7 @@ contract VotingSystem {
     event BallotBoxAdded(address indexed owner, string name, string[] options);
     event VotingStarted(uint256 indexed ballotBoxId);
     event VotingEnded(uint256 indexed ballotBoxId);
-    event Voted(
-        address indexed voter,
-        uint256 indexed ballotBoxId,
-        string indexed option
-    );
+    event Voted(address indexed voter, uint256 indexed ballotBoxId, string indexed option);
 
     // Modifiers
     modifier ballotOwner(uint256 ballotBoxId) {
@@ -57,10 +52,8 @@ contract VotingSystem {
         _;
     }
 
-    modifier notVoted(uint _ballotBoxId) {
-        bytes memory selectedOption = bytes(
-            addressVotingRegistery[msg.sender][_ballotBoxId]
-        );
+    modifier notVoted(uint256 _ballotBoxId) {
+        bytes memory selectedOption = bytes(addressVotingRegistery[msg.sender][_ballotBoxId]);
         if (selectedOption.length != 0) {
             revert VotingSystem__AlreadyVoted();
         }
@@ -68,9 +61,11 @@ contract VotingSystem {
     }
 
     // Functions
-    function addBallotBox(string calldata _name, string[] calldata _options)
-        external
-    {
+    function initialize() external {
+        totalItems = 0;
+    }
+
+    function addBallotBox(string calldata _name, string[] calldata _options) external {
         BallotBox memory ballotBox;
         ballotBox.name = _name;
         ballotBox.options = _options;
@@ -82,7 +77,7 @@ contract VotingSystem {
         emit BallotBoxAdded(msg.sender, _name, _options);
     }
 
-    function startVote(uint _ballotBoxId)
+    function startVote(uint256 _ballotBoxId)
         external
         ballotOwner(_ballotBoxId)
         isInCreatedState(_ballotBoxId)
@@ -112,5 +107,17 @@ contract VotingSystem {
     {
         ballotBoxRegistery[_ballotBoxId].state = State.Ended;
         emit VotingEnded(_ballotBoxId);
+    }
+
+    function getTotalItems() external view returns (uint256) {
+        return totalItems;
+    }
+
+    function getBallotBox(uint256 _ballotBoxId) external view returns (BallotBox memory) {
+        return ballotBoxRegistery[_ballotBoxId];
+    }
+
+    function getAddressVote(uint256 _ballotBoxId) external view returns (string memory) {
+        return addressVotingRegistery[msg.sender][_ballotBoxId];
     }
 }
