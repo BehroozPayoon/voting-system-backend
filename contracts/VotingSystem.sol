@@ -8,8 +8,8 @@ error VotingSystem__AlreadyVoted();
 
 contract VotingSystem {
     uint256 private totalItems;
-    mapping(uint256 => BallotBox) private ballotBoxRegistery;
-    mapping(address => mapping(uint256 => string)) private addressVotingRegistery;
+    mapping(uint256 => BallotBox) internal ballotBoxRegistery;
+    mapping(address => mapping(uint256 => string)) internal addressVotingRegistery;
 
     enum State {
         Created,
